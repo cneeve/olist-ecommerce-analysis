@@ -18,6 +18,8 @@ The analysis focuses on five areas:
 
 The final output is an interactive **five-page Power BI dashboard** supported by reusable SQL views and a structured data model.
 
+![Overview Dashboard](dashboard/screenshots/overview.png)
+
 ---
 
 ## Tools Used
@@ -155,8 +157,6 @@ The final report contains five pages.
 ## 1. Overview
 
 Provides a high-level summary of marketplace performance.
-
-![Overview Dashboard](dashboard/screenshots/overview.png)
 
 Key KPIs include:
 
