@@ -1,0 +1,172 @@
+-- Selected DAX Measures
+-- Olist E-Commerce Analysis
+
+-- A representative selection of measures used in the Power BI dashboard.
+-- The measures demonstrate aggregation, time intelligence, filter context,
+-- customer analysis, seller performance and cumulative calculations.
+
+
+-- ============================================================
+-- OVERVIEW / SALES
+-- ============================================================
+
+Total Revenue =
+SUM('Order Items'[price])
+
+
+Total Orders =
+DISTINCTCOUNT('Orders'[order_id])
+
+
+Average Order Value =
+DIVIDE(
+    [Total Revenue],
+    [Total Orders]
+)
+
+
+Previous Month Revenue =
+CALCULATE(
+    [Total Revenue],
+    DATEADD(
+        'Date'[Date],
+        -1,
+        MONTH
+    )
+)
+
+
+MoM Revenue Growth % =
+DIVIDE(
+    [Total Revenue] - [Previous Month Revenue],
+    [Previous Month Revenue]
+)
+
+
+-- ============================================================
+-- DELIVERY
+-- ============================================================
+
+-- Average number of days late for orders classified as Late.
+Average Days Late =
+AVERAGEX(
+    FILTER(
+        'Orders',
+        'Orders'[delivery_status] = "Late"
+    ),
+    DATEDIFF(
+        'Orders'[order_estimated_delivery_date],
+        'Orders'[order_delivered_customer_date],
+        DAY
+    )
+)
+
+
+-- Calculates the late-delivery rate dynamically for the
+-- Same State vs Different State delivery-region analysis.
+Delivery Region Late Rate =
+DIVIDE(
+    CALCULATE(
+        COUNTROWS('Delivery Region'),
+        'Delivery Region'[delivery_status] = "Late"
+    ),
+    COUNTROWS('Delivery Region')
+)
+
+
+-- ============================================================
+-- CUSTOMERS
+-- ============================================================
+
+-- Counts customers appearing more than once in the customer table,
+-- where each customer_id represents an individual order record.
+Repeat Customers =
+COUNTROWS(
+    FILTER(
+        VALUES('Customers'[customer_unique_id]),
+        CALCULATE(
+            COUNTROWS('Customers')
+        ) > 1
+    )
+)
+
+
+Repeat Customer Rate =
+DIVIDE(
+    [Repeat Customers],
+    [Customer Count]
+)
+
+
+-- ============================================================
+-- SELLER PERFORMANCE
+-- ============================================================
+
+-- Seller context originates in Order Items and does not naturally
+-- filter back to Orders through the single-direction model.
+-- TREATAS applies the filtered order IDs to the Orders table.
+
+Seller Delivered Orders =
+CALCULATE(
+    DISTINCTCOUNT('Orders'[order_id]),
+    NOT ISBLANK('Orders'[delivery_status]),
+    TREATAS(
+        VALUES('Order Items'[order_id]),
+        'Orders'[order_id]
+    )
+)
+
+
+Seller Late Orders =
+CALCULATE(
+    DISTINCTCOUNT('Orders'[order_id]),
+    'Orders'[delivery_status] = "Late",
+    TREATAS(
+        VALUES('Order Items'[order_id]),
+        'Orders'[order_id]
+    )
+)
+
+
+Seller Late Delivery Rate =
+DIVIDE(
+    [Seller Late Orders],
+    [Seller Delivered Orders]
+)
+
+
+-- Ranks sellers by total product revenue.
+Seller Revenue Rank =
+RANKX(
+    ALL('Sellers'[seller_id]),
+    [Total Revenue],
+    ,
+    DESC,
+    DENSE
+)
+
+
+-- Calculates cumulative revenue for all sellers up to the
+-- current seller's revenue rank.
+Cumulative Seller Revenue =
+VAR CurrentRank =
+    [Seller Revenue Rank]
+
+RETURN
+    CALCULATE(
+        [Total Revenue],
+        FILTER(
+            ALL('Sellers'[seller_id]),
+            [Seller Revenue Rank] <= CurrentRank
+        )
+    )
+
+
+Cumulative Revenue % =
+DIVIDE(
+    [Cumulative Seller Revenue],
+    CALCULATE(
+        [Total Revenue],
+        ALL('Sellers'[seller_id])
+    )
+)
