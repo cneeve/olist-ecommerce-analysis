@@ -18,6 +18,8 @@ The analysis focuses on five areas:
 
 The final output is an interactive **five-page Power BI dashboard** supported by reusable SQL views and a structured data model.
 
+## Dashboard Preview
+
 ![Overview Dashboard](dashboard/screenshots/overview.png)
 
 ---
