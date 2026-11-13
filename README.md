@@ -150,6 +150,10 @@ Technical keys and helper columns are hidden from report view to keep the model 
 ## Data Model 
 
 ![Power BI Data Model](docs/data_model.png)
+
+Selected DAX measures used in the dashboard are available in [`dax/selected_measures.dax`](dax/selected_measures.dax), 
+including time-intelligence, customer-retention, seller-performance and cumulative-revenue calculations.
+
 ---
 
 # Dashboard
